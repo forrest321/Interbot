@@ -249,6 +249,11 @@ bot = Cinch::Bot.new do
 	m.reply "OH, NO! NOT THE BEES! NOT THE BEES! AAAAAHHHHH!"
   end
   
+  on :message, "artfart" do |m|
+	doc = Hpricot(open("http://www.asciiartfarts.com/random.cgi")).search('pre').last
+	m.reply doc
+  end
+  
   on :message, /http:\/\/movies.netflix.com\/WiMovie\/(.*)\/(\d+)/ do |m, title, id|
 	title = title.gsub(/_/, ' ')
 	url = "http://instantwatcher.com/titles?q=#{URI.escape(title)}"
