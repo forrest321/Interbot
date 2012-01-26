@@ -9,6 +9,8 @@ require 'twilio-ruby'
 require 'nokogiri'
 require 'cgi'
 require 'gmail' #ix2bot@gmail.com/interbot11
+require 'htmlentities'
+require 'crack'
 
 bot = Cinch::Bot.new do
   @bot = self;
@@ -76,6 +78,27 @@ bot = Cinch::Bot.new do
     m.reply "What about #{lunches.sort_by{rand}[0]}?"
   end
 
+  on :message, /what'?s for lunch/ do |m|
+	public_key = '302fde7b5e4f7fd48bb0b52b7957e11d'
+	board_id = '4f202ad1110d3111281f2f63'
+	api_lists = "https://api.trello.com/1/boards/#{board_id}/lists/open?key=#{public_key}"
+	suggestion_count = 3
+	list_today = Crack::JSON.parse(open(api_lists).read)[Date.today.wday]
+	api_cards = list_today['cards']
+	lunch_options = []
+	api_cards.each do |card|
+		api_card_url = "https://api.trello.com/1/cards/#{card["id"]}?fields=name,idList&member_fields=fullName&key=#{public_key}"
+		api_card = Crack::JSON.parse(open(api_card_url).read)
+		lunch_options << { :name => api_card["name"], :votes => api_card["badges"]["votes"] } if api_card["labels"].any? {|label| label["name"] == 'This Week' }
+	end
+	lunch_options = lunch_options.sort_by {|opt| opt[:votes]}.reverse
+	while suggestion_count > 0 && lunch_options.length > 0
+		opt = lunch_options.pop
+		m.reply "#{opt[:name]} has #{opt[:votes]} votes"
+		suggestion_count = suggestion_count - 1
+	end
+  end
+  
   on :message, /^#{self.nick} weather($| .*$)/ do |m, location|
     location = "Birmingham, AL" if location ==''
     barometer = Barometer.new(location)
@@ -154,6 +177,8 @@ bot = Cinch::Bot.new do
   end
   
   on :message, /^#{self.nick} urban (.*)/ do |m, term|
+    match = m.user.nick.match(/^fo+\d?$/)
+	return unless match.nil? || match[0] != m.user.nick
     m.reply(urban_dict(term) || "No results found")
   end
 
@@ -222,6 +247,44 @@ bot = Cinch::Bot.new do
   
   on :message, /\bbees\b/ do |m|
 	m.reply "OH, NO! NOT THE BEES! NOT THE BEES! AAAAAHHHHH!"
+  end
+  
+  on :message, /http:\/\/movies.netflix.com\/WiMovie\/(.*)\/(\d+)/ do |m, title, id|
+	title = title.gsub(/_/, ' ')
+	url = "http://instantwatcher.com/titles?q=#{URI.escape(title)}"
+	doc = Hpricot(open(url))
+	movie = doc.search("#title-listing > li > a").first.attributes["href"]
+	m.reply "#{title}: http://instantwatcher.com#{movie}"
+  end
+  
+  on :message, /(https?:\/\/twitter.com\/#!\/.*\/statu(s|ses)\/\d+)/ do |m, tweet|
+	return if tweet.include? '/photo/'
+	doc = Hpricot(open(tweet.gsub("#!/",'')))
+	user = HTMLEntities.new.decode(doc.search('.screen-name').first.html)
+	timestamp = HTMLEntities.new.decode(doc.search('.timestamp').first.html)
+	body = doc.search('.entry-content').first
+	links = body.search("a.twitter-timeline-link")
+	bodytext = body.innerText
+	links.each do |link|
+		search_link = link.innerText.gsub(/\?/, "\\?").gsub(/\//, "\\/")
+		bodytext.gsub!(/#{search_link}/, "http://#{link.innerText}")
+	end
+	m.reply "@#{user}: #{bodytext} (at #{timestamp})"
+  end
+  
+  on :message, /cooler than being cool/ do |m|
+	m.reply "ICE COLD."
+  end
+  
+  on :message, /(.*)/ do |m, text|
+	url = "http://127.0.0.1:1337/?text=#{URI.escape(text)}"
+	replies = ["That's what she said!", "Your mom said that.", "Your mom said that last night.", "That's what Winger said!"]
+	result = open(url).read
+	m.reply replies.sort_by{rand}[0] if result == 'true'
+  end
+  
+  on :message, /when'?s lunch/ do |m|
+	m.reply "NOW"
   end
   
 end
