@@ -78,7 +78,7 @@ bot = Cinch::Bot.new do
     m.reply "What about #{lunches.sort_by{rand}[0]}?"
   end
 
-  on :message, /what'?s for lunch/ do |m|
+  on :message, /[Ww]hat'?s for lunch/ do |m|
 	public_key = '302fde7b5e4f7fd48bb0b52b7957e11d'
 	board_id = '4f202ad1110d3111281f2f63'
 	api_lists = "https://api.trello.com/1/boards/#{board_id}/lists/open?key=#{public_key}"
@@ -143,9 +143,7 @@ bot = Cinch::Bot.new do
 	              :CodyC => '2059601539@txt.att.net',
 	              :Ash_Work => '2056173946@txt.att.net',
 	              :keithtronic => '3346692522@messaging.sprintpcs.com',
-	              :isau => '2056170775@txt.att.net',
-	              :clark => '3342216642@vtext.com',
-	              :robbihun => '2053839379@txt.att.net'
+	              :clark => '3342216642@vtext.com'
 				}
 	gmail = Gmail.connect('ix2bot@gmail.com', 'interbot11')
     emps[:in].each do |e|
@@ -209,6 +207,7 @@ bot = Cinch::Bot.new do
   end
   
   on :message, /^([sS]hould|[wW]ill|[iI]s|[dD]id|[hH]as|[dD]oes|[aA]re|[dD]o) .+\?$/ do |m|
+	return if (m.include? ' or ')
 	responses = [
 					"Signs point to yes",
 					"Yes",
@@ -249,7 +248,7 @@ bot = Cinch::Bot.new do
 	m.reply "OH, NO! NOT THE BEES! NOT THE BEES! AAAAAHHHHH!"
   end
   
-  on :message, "artfart" do |m|
+  on :message, "artfarticus, please" do |m|
 	doc = Hpricot(open("http://www.asciiartfarts.com/random.cgi")).search('pre').last
 	m.reply doc
   end
@@ -283,7 +282,7 @@ bot = Cinch::Bot.new do
   
   on :message, /(.*)/ do |m, text|
 	url = "http://127.0.0.1:1337/?text=#{URI.escape(text)}"
-	replies = ["That's what she said!", "Your mom said that.", "Your mom said that last night.", "That's what Winger said!"]
+	replies = ["That's what she said!", "Your mom said that.", "Your mom said that last night.", "That's what Winger's sister said!"]
 	result = open(url).read
 	m.reply replies.sort_by{rand}[0] if result == 'true'
   end
