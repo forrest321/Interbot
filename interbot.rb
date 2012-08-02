@@ -49,24 +49,9 @@ bot = Cinch::Bot.new do
   
   on :message, "hello" do |m|
     nick = m.user.nick
-    match = nick.match(/^fo+\d?$/)
-	m.reply match.nil? || match[0] != nick ? "Hello, #{nick}" : "GTFO, #{nick}"
-  end
-  
-  on :message, /^#{self.nick} push (.*) to (.*)$/ do |m, project_name, destination|
-    project_name = "#{project_name} #{destination}"
-    m.reply "Pushing #{matches[0]} to #{matches[1]} by building #{project_name} on Hudson"
-    url = URI.parse("http://jaws:8080/job/#{project_name.gsub(' ', '%20')}/build?delay=0sec")
-    request = Net::HTTP::Get.new(url.path)
-    Net::HTTP.start(url.host, url.port) {|http| http.request(request)}
-  end
-
-  on :message, /^#{self.nick} build (.*)$/ do |m, project_name|
-    m.reply "Building #{project_name}"
-    url = URI.parse("http://jaws:8080/job/#{project_name.gsub(' ', '%20')}/build?delay=0sec")
-    request = Net::HTTP::Get.new(url.path)
-    Net::HTTP.start(url.host, url.port) {|http| http.request(request)}
-  end
+    match = nick.match(/^dave+\d?$/)
+	m.reply match.nil? || match[0] != nick ? "Hello, #{nick}" : "Hi Jackass!"
+  end  
 
   on :message, /^#{self.nick} pick lunch$/ do |m|
     lunches = ["Sitar", "Jason's Deli", "Dreamland", "Sweet Tea", "Rogue", "Acapulco", "Rojo", "Niki's West", "Moe's BBQ", "Mexico Lindo", "Jimmy John's", "Homewood Diner", "Sarris"]
@@ -112,13 +97,7 @@ bot = Cinch::Bot.new do
     weather = barometer.measure
     m.reply "Today: #{weather.forecast[0].icon}. High of #{weather.forecast[0].high}, low of #{weather.forecast[0].low}. Sunset at #{weather.forecast[0].sun.set}"
     m.reply "Tomorrow: #{weather.forecast[1].icon}. High of #{weather.forecast[1].high}, low of #{weather.forecast[1].low}. Sunset at #{weather.forecast[1].sun.set}"
-  end
-
-  on :message, /^#{self.nick} doorman$/ do |m|
-    emps = doorman
-    m.reply "In: #{emps[:in].join(', ')}"
-    m.reply "Out: #{emps[:out].join(', ')}"
-  end
+  end  
 
   on :message, /^#{self.nick} whois (.*)$/ do |m, domain|
     r = Whois.whois(domain)
@@ -174,64 +153,9 @@ bot = Cinch::Bot.new do
 	m.reply "Total: #{total}" if dice > 1 || mod.to_i != 0
   end
   
-  on :message, /^#{self.nick} urban (.*)/ do |m, term|
-    match = m.user.nick.match(/^fo+\d?$/)
-	return unless match.nil? || match[0] != m.user.nick
+  on :message, /^#{self.nick} urban (.*)/ do |m, term|    
     m.reply(urban_dict(term) || "No results found")
-  end
-
-  on :message, /^#{self.nick} xkcd/ do |m|
-	url = URI.parse('http://dynamic.xkcd.com/random/comic/')
-	request = Net::HTTP::Get.new(url.path)
-	response = Net::HTTP.start(url.host, url.port) {|http| http.request(request)}
-	m.reply response.header['location']
-  end
-  
-  on :message, /haters .*hate/ do |m|
-    haters = [
-				"http://www.hatersgoingtohate.com/wp-content/uploads/2010/06/haters-gonna-hate-rubberband-ball.jpg", 
-				"http://www.hatersgoingtohate.com/wp-content/uploads/2010/06/haters-gonna-hate-cat.jpg", 
-				"http://jesad.com/img/life/haters-gonna-hate/haters-gonna-hate01.jpg", 
-				"http://i671.photobucket.com/albums/vv78/Sinsei55/HatersGonnaHatePanda.jpg", 
-				"http://24.media.tumblr.com/tumblr_lltwmdVpoL1qekprfo1_500.gif",
-				"http://www.hatersgoingtohate.com/wp-content/uploads/2011/08/haters-gonna-hate-dog-walker.jpg",
-				"http://www.hatersgoingtohate.com/wp-content/uploads/2011/06/haters-gonna-hate-chick.jpg",
-				"http://www.hatersgoingtohate.com/wp-content/uploads/2011/04/elf-dog.jpg",
-				"http://www.hatersgoingtohate.com/wp-content/uploads/2011/03/haters-gonna-hate-look-at-this-dog.jpg",
-				"http://www.hatersgoingtohate.com/wp-content/uploads/2011/02/haters-gonna-hate-wwf.gif",
-				"http://www.hatersgoingtohate.com/wp-content/uploads/2011/01/haters_gonna_hate_mario_walking.gif",
-				"http://www.hatersgoingtohate.com/wp-content/uploads/2010/06/haters-gonna-hate-oldschool.jpg",
-				"http://www.hatersgoingtohate.com/wp-content/uploads/2010/06/haters-gonna-hate-eagle.jpg"
-			]
-	m.reply haters.sort_by{rand}[0]
-  end
-  
-  on :message, /^([sS]hould|[wW]ill|[iI]s|[dD]id|[hH]as|[dD]oes|[aA]re|[dD]o) .+\?$/ do |m|
-	return if (m.include? ' or ')
-	responses = [
-					"Signs point to yes",
-					"Yes",
-					"Reply hazy, try again",
-					"Without a doubt",
-					"My sources say no",
-					"As I see it, yes",
-					"You may rely on it",
-					"Concentrate and ask again",
-					"Outlook not so good",
-					"It is decidedly so",
-					"Better not tell you now",
-					"Very doubtful",
-					"Yes - definitely",
-					"It is certain",
-					"Cannot predict now",
-					"Most likely",
-					"Ask again later",
-					"My reply is no",
-					"Outlook good",
-					"Don't count on it"
-				]
-	m.reply responses.sort_by{rand}[0]
-  end
+  end  
   
   on :message, /^[Aa]chievement [U|u]nlocked: (.*)/ do |m, achievement|
 	url = "http://achievement-unlocked.heroku.com/xbox/#{URI.escape(achievement)}.png"
@@ -242,10 +166,6 @@ bot = Cinch::Bot.new do
 	title = "L2Spell, #{m.user.nick}"
 	url = "http://achievement-unlocked.heroku.com/xbox/#{URI.escape(title)}.png"
 	m.reply url
-  end
-  
-  on :message, /\bbees\b/ do |m|
-	m.reply "OH, NO! NOT THE BEES! NOT THE BEES! AAAAAHHHHH!"
   end
   
   on :message, "artfarticus, please" do |m|
