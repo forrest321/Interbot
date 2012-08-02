@@ -18,7 +18,7 @@ bot = Cinch::Bot.new do
   configure do |c|
     c.server = 'irc.freenode.org'
     c.channels = ['#ix2-bot','#ix2-2','#ix2-github']
-    c.nick = 'interbot'
+    c.nick = 'foooooooo'
   end
 
   helpers do
